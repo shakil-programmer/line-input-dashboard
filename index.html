@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Live Cutting Input Board</title>
+    <!-- PWA Meta Tags -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="DPQSL Cutting">
+    <meta name="theme-color" content="#1e40af">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="logo-1.png">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: #f3f4f6;
+            font-family: sans-serif;
+            font-size: 12px;
+            padding: 8px;
+            user-select: none;
+        }
+
+        #production-dashboard-panel {
+            padding: 12px;
+            background: #f3f4f6;
+            border-radius: 12px;
+        }
+
+        /* HEADER */
+        .header-card {
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, .1);
+            margin-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 8px solid #1e40af;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-logo {
+            width: 70px;
+            height: 70px;
+            object-fit: contain;
+        }
+
+        .header-title h1 {
+            font-size: 18px;
+            font-weight: 900;
+            color: #1e3a8a;
+            letter-spacing: .03em;
+        }
+
+        .header-title p {
+            font-size: 12px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 700;
+            color: #374151;
+            flex-wrap: wrap;
+        }
+
+        .date-box {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #eff6ff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #bfdbfe;
+        }
+
+        .date-box label {
+            color: #1e3a8a;
+            font-weight: 900;
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .time-box {
+            font-size: 16px;
+            font-weight: 900;
+            color: #1f2937;
+        }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #dcfce7;
+            color: #166534;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            border: 1px solid #86efac;
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+        }
+
+        .live-dot {
+            width: 10px;
+            height: 10px;
+            background: #16a34a;
+            border-radius: 50%;
+            animation: ping 1s infinite;
+        }
+
+        @keyframes ping {
+
+            0%,
+            100% {
+                opacity: 1;
+                transform: scale(1)
+            }
+
+            50% {
+                opacity: .5;
+                transform: scale(1.4)
+            }
+        }
+
+        /* SHARE DROPDOWN */
+        .share-wrap {
+            position: relative;
+            display: inline-block;
+        }
+
+        .share-btn {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: #1e40af;
+            color: #fff;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #1e3a8a;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .share-btn:hover {
+            background: #1e3a8a;
+        }
+
+        .share-dropdown {
+            display: none;
+            position: absolute;
+            right: 0;
+            top: calc(100% + 6px);
+            width: 176px;
+            background: #fff;
+            border-radius: 6px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, .15);
+            z-index: 50;
+            border: 1px solid #e5e7eb;
+        }
+
+        .share-dropdown.open {
+            display: block;
+        }
+
+        .share-dropdown button {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px 16px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            color: #374151;
+            text-align: left;
+        }
+
+        .share-dropdown button:hover {
+            background: #f9fafb;
+        }
+
+        /* KPI GRID - REMODEL WITH ICONS */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .kpi-card {
+            background: #fff;
+            padding: 10px 8px;
+            border-radius: 6px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: left;
+        }
+
+        .kpi-card.green-bot {
+            border-bottom: 4px solid #22c55e;
+        }
+
+        .kpi-card.yellow-bot {
+            border-bottom: 4px solid #eab308;
+        }
+
+        .kpi-card.red-bot {
+            border-bottom: 4px solid #ef4444;
+        }
+
+        .kpi-card.purple-bg {
+            background: #faf5ff;
+            border-bottom: 4px solid #a855f7;
+        }
+
+        .kpi-icon-box {
+            width: 36px;
+            height: 36px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .kpi-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .kpi-label {
+            font-size: 9px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 1px;
+            white-space: nowrap;
+        }
+
+        .kpi-val {
+            font-size: 20px;
+            font-weight: 900;
+            color: #1e3a8a;
+            line-height: 1.1;
+        }
+
+        .kpi-val.sm {
+            font-size: 18px;
+        }
+
+        /* TABLE */
+        .table-wrap {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+            overflow: hidden;
+            margin-bottom: 12px;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 900px;
+        }
+
+        thead tr {
+            background: #004085;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+        }
+
+        thead th {
+            padding: 8px;
+            border: 1px solid #1e3a8a;
+            white-space: nowrap;
+            text-align: center;
+        }
+
+        thead th.dark {
+            background: #1e3a8a;
+        }
+
+        tbody tr {
+            background: #fff;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 11px;
+            font-weight: 700;
+            color: #374151;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        tbody td {
+            padding: 6px;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+        }
+
+        tbody td.left {
+            text-align: left;
+            padding-left: 8px;
+        }
+
+        tbody td.gray-bg {
+            background: #f9fafb;
+        }
+
+        tbody td.blue-bg {
+            background: #eff6ff;
+            color: #1e3a8a;
+        }
+
+        .badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            display: inline-block;
+            width: 80px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .badge-achieved {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .badge-warning {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .badge-critical {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .txt-green {
+            color: #16a34a;
+        }
+
+        .txt-yellow {
+            color: #ca8a04;
+        }
+
+        .txt-red {
+            color: #dc2626;
+        }
+
+        /* BOTTOM PANELS */
+        .bottom-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .panel {
+            background: #fff;
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, .08);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel-title {
+            font-size: 11px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            border-bottom: 1px solid #e5e7eb;
+            padding-bottom: 6px;
+        }
+
+        .panel-title.green {
+            color: #16a34a;
+        }
+
+        .panel-title.red {
+            color: #ef4444;
+        }
+
+        .panel-title.blue {
+            color: #1e40af;
+            text-align: center;
+        }
+
+        .panel ul {
+            list-style: none;
+        }
+
+        .panel ul li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 3px 0;
+            border-bottom: 1px solid #f3f4f6;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .panel ul li.green {
+            color: #15803d;
+        }
+
+        .panel ul li.red {
+            color: #dc2626;
+        }
+
+        .see-more-btn {
+            display: none;
+            font-size: 10px;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 8px;
+            align-self: center;
+            border: 1px solid;
+        }
+
+        .see-more-btn.green {
+            background: #f0fdf4;
+            color: #15803d;
+            border-color: #bbf7d0;
+        }
+
+        .see-more-btn.red {
+            background: #fef2f2;
+            color: #dc2626;
+            border-color: #fecaca;
+        }
+
+        /* BAR CHART */
+        #hourly-bar-chart {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 112px;
+            padding: 8px 8px 0;
+            gap: 6px;
+        }
+
+        .bar-col {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            height: 100%;
+            justify-content: flex-end;
+        }
+
+        .bar-val {
+            font-size: 9px;
+            font-weight: 900;
+            color: #1e3a8a;
+            margin-bottom: 2px;
+        }
+
+        .bar-rect {
+            width: 100%;
+            background: #2563eb;
+            border-radius: 3px 3px 0 0;
+        }
+
+        .bar-rect:hover {
+            background: #1e40af;
+        }
+
+        .bar-label {
+            font-size: 9px;
+            color: #6b7280;
+            font-weight: 700;
+            margin-top: 3px;
+        }
+
+        /* FOOTER */
+        .footer-bar {
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #6b7280;
+            font-weight: 700;
+        }
+
+        /* NO DATA */
+        .no-data-row td {
+            padding: 32px;
+            color: #ef4444;
+            font-size: 13px;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            background: #fef2f2;
+            border: 1px solid #fca5a5;
+            text-align: center;
+        }
+
+        /* LOADING OVERLAY */
+        #export-loading {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 20, 80, .78);
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            gap: 12px;
+        }
+
+        #export-loading .load-title {
+            font-size: 20px;
+            font-weight: 900;
+        }
+
+        #export-loading .load-sub {
+            font-size: 13px;
+            opacity: .8;
+        }
+
+        /* MOBILE */
+        @media (max-width: 768px) {
+            body {
+                padding: 4px;
+                font-size: 11px;
+            }
+
+            .header-card {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 8px;
+            }
+
+            .header-logo {
+                width: 45px;
+                height: 45px;
+            }
+
+            .header-title h1 {
+                font-size: 13px;
+            }
+
+            .header-right {
+                width: 100%;
+                gap: 6px;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .kpi-full {
+                grid-column: span 2;
+            }
+
+            .bottom-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="production-dashboard-panel">
+        <!-- HEADER -->
+        <div class="header-card">
+            <div class="header-left"> <img src="logo-1.png" alt="DPQSL Logo" class="header-logo"
+                    crossorigin="anonymous">
+                <div class="header-title">
+                    <h1>DEBONAIR PADDING AND QUILTING SOLUTION LIMITED</h1>
+                    <p>Line Wise Hourly Cutting Input Status</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <div class="date-box" style="cursor:pointer;position:relative;"
+                    onclick="document.getElementById('target-date').showPicker()"> <label style="cursor:pointer"><i
+                            class="fa-regular fa-calendar-days" style="margin-right:4px"></i>DATE:</label> <span
+                        id="date-display" style="font-size:12px;font-weight:700;color:#1f2937;padding:2px 4px;"></span>
+                    <i class="fa-solid fa-calendar-days"
+                        style="color:#1e40af;font-size:13px;margin-left:2px;cursor:pointer"></i> <input type="date"
+                        id="target-date" data-html2canvas-ignore="true"
+                        style="position:absolute;opacity:0;width:0;height:0;pointer-events:none;"> </div>
+                <div class="time-box"> <i class="fa-regular fa-clock" style="color:#1e40af;margin-right:4px"></i> <span
+                        id="live-time">00:00:00 AM</span> </div>
+                <div class="live-badge"> <span class="live-dot"></span> ● LIVE </div>
+                <div class="share-wrap" data-html2canvas-ignore="true"> <button class="share-btn"
+                        onclick="toggleShareDropdown(event)"> <i class="fa-solid fa-share-nodes"></i> Share As <i
+                            class="fa-solid fa-chevron-down" style="font-size:10px"></i> </button>
+                    <div class="share-dropdown" id="share-dropdown-menu"> <button onclick="exportDashboard('link')"><i
+                                class="fa-solid fa-link" style="color:#2563eb"></i> Copy Live Link</button> <button
+                            onclick="exportDashboard('png')"><i class="fa-regular fa-image" style="color:#16a34a"></i>
+                            Download PNG</button> <button onclick="exportDashboard('jpg')"><i
+                                class="fa-regular fa-image" style="color:#ea580c"></i> Download JPG</button> <button
+                            onclick="exportDashboard('pdf')"><i class="fa-solid fa-file-pdf" style="color:#dc2626"></i>
+                            Download PDF</button> </div>
+                </div>
+            </div>
+        </div>
+        <!-- KPI CARDS WITH MODERN ICONS -->
+        <div class="kpi-grid">
+            <div class="kpi-card" style="border-bottom: 4px solid #3b82f6;">
+                <div class="kpi-icon-box" style="background: #eff6ff; color: #2563eb;"><i
+                        class="fa-solid fa-industry"></i></div>
+                <div class="kpi-content">
+                    <div class="kpi-label">Total Lines</div>
+                    <div class="kpi-val" id="kpi-total-lines">0</div>
+                </div>
+            </div>
+            <div class="kpi-card green-bot">
+                <div class="kpi-icon-box" style="background: #f0fdf4; color: #16a34a;"><i
+                        class="fa-solid fa-circle-check"></i></div>
+                <div class="kpi-content">
+                    <div class="kpi-label" style="color: #16a34a;">Achieved Lines</div>
+                    <div class="kpi-val sm green" id="kpi-achieved">0</div>
+                </div>
+            </div>
+            <div class="kpi-card yellow-bot">
+                <div class="kpi-icon-box" style="background: #fef9c3; color: #ca8a04;"><i
+                        class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="kpi-content">
+                    <div class="kpi-label" style="color: #ca8a04;">Warning Lines</div>
+                    <div class="kpi-val sm yellow" id="kpi-warning">0</div>
+                </div>
+            </div>
+            <div class="kpi-card red-bot">
+                <div class="kpi-icon-box" style="background: #fef2f2; color: #dc2626;"><i
+                        class="fa-solid fa-circle-xmark"></i></div>
+                <div class="kpi-content">
+                    <div class="kpi-label" style="color: #dc2626;">Critical Lines</div>
+                    <div class="kpi-val sm red" id="kpi-critical">0</div>
+                </div>
+            </div>
+            <div class="kpi-card" style="border-bottom: 4px solid #2563eb;">
+                <div class="kpi-icon-box" style="background: #eff6ff; color: #1e40af;"><i
+                        class="fa-solid fa-bullseye"></i></div>
+                <div class="kpi-content">
+                    <div class="kpi-label" style="color: #2563eb;">Total Target</div>
+                    <div class="kpi-val sm blue" id="kpi-total-target">0</div>
+                </div>
+            </div>
+            <div class="kpi-card" style="border-bottom: 4px solid #16a34a;">
+                <div class="kpi-icon-box" style="background: #f0fdf4; color: #15803d;"><i
+                        class="fa-solid fa-arrow-trend-up"></i></div>
+                <div class="kpi-content">
+                    <div class="kpi-label" style="color: #16a34a;">Total Input</div>
+                    <div class="kpi-val sm green" id="kpi-total-output">0</div>
+                </div>
+            </div>
+            <div class="kpi-card purple-bg kpi-full">
+                <div class="kpi-icon-box" style="background: #f3e8ff; color: #7e22ce;"><i
+                        class="fa-solid fa-chart-pie"></i></div>
+                <div class="kpi-content">
+                    <div class="kpi-label" style="color: #7e22ce;">Overall Achievement</div>
+                    <div class="kpi-val sm purple" id="kpi-overall-ach">0%</div>
+                </div>
+            </div>
+        </div>
+        <!-- TABLE -->
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Line</th>
+                        <th>Buyer</th>
+                        <th>Style</th>
+                        <th>Hourly Target</th>
+                        <th>8-9</th>
+                        <th>9-10</th>
+                        <th>10-11</th>
+                        <th>11-12</th>
+                        <th>12-1</th>
+                        <th>2-3</th>
+                        <th>3-4</th>
+                        <th>4-5</th>
+                        <th>5-6</th>
+                        <th>6-7</th>
+                        <th class="dark">Total</th>
+                        <th class="dark">Achieve %</th>
+                        <th>Status</th>
+                        <th style="width:140px">Comments</th>
+                    </tr>
+                </thead>
+                <tbody id="production-table-body"></tbody>
+            </table>
+        </div>
+        <!-- BOTTOM PANELS -->
+        <div class="bottom-grid">
+            <div class="panel">
+                <div class="panel-title green"><i class="fa-solid fa-trophy" style="margin-right:6px"></i>Top Performing
+                    Lines</div>
+                <ul id="top-lines"></ul> <button id="btn-expand-top" class="see-more-btn green"
+                    onclick="toggleTopLines()">See More</button>
+            </div>
+            <div class="panel">
+                <div class="panel-title red"><i class="fa-solid fa-arrow-trend-down" style="margin-right:6px"></i>Low
+                    Performing Lines</div>
+                <ul id="low-lines"></ul> <button id="btn-expand-low" class="see-more-btn red"
+                    onclick="toggleLowLines()">See More</button>
+            </div>
+            <div class="panel">
+                <div class="panel-title blue"><i class="fa-solid fa-chart-bar" style="margin-right:6px"></i>Hourly Total
+                    Input (All Lines)</div>
+                <div id="hourly-bar-chart"></div>
+            </div>
+        </div>
+        <!-- FOOTER -->
+        <div class="footer-bar">
+            <div>Data Last Updated: <span id="last-updated">--:--:--</span></div>
+            <div data-html2canvas-ignore="true"> Auto Refresh In: <span id="countdown"
+                    style="font-weight:900;color:#1f2937">30</span>s <i class="fa-solid fa-rotate"
+                    style="cursor:pointer;color:#1d4ed8;margin-left:4px" onclick="loadProductionSpreadsheet()"></i>
+            </div>
+        </div>
+    </div>
+    <script>    const SHEET_GLOBAL_ID = '1Hh52T1Yl3YDIW13xyPx9bLkD61RKmFxhyD0mQIOzrAU'; let schedulerCountdown = 30; let globalTopLines = [], globalLowLines = []; let isTopExpanded = false, isLowExpanded = false;
+    /* ===== PWA SERVICE WORKER (banner ছাড়া) ===== */    if ('serviceWorker' in navigator) { window.addEventListener('load', () => { navigator.serviceWorker.register('./sw.js').then(r => console.log('SW registered:', r.scope)).catch(e => console.log('SW error:', e)); }); }
+    /* ===== DATE & TIME ===== */    const pickerElement = document.getElementById('target-date'); pickerElement.value = new Date().toISOString().split('T')[0];
+        function syncDateDisplay() { const [y, m, d] = pickerElement.value.split('-'); document.getElementById('date-display').innerText = d + '/' + m + '/' + y; } syncDateDisplay();
+        setInterval(() => { document.getElementById('live-time').innerText = new Date().toLocaleTimeString('en-US', { hour12: true }); }, 1000);
+        pickerElement.addEventListener('change', () => { syncDateDisplay(); schedulerCountdown = 30; loadProductionSpreadsheet(); });
+    /* ===== SHARE DROPDOWN ===== */    function toggleShareDropdown(event) { event.stopPropagation(); document.getElementById('share-dropdown-menu').classList.toggle('open'); } window.addEventListener('click', () => { document.getElementById('share-dropdown-menu').classList.remove('open'); });
+    /* ===== EXPORT ===== */    async function exportDashboard(format) { document.getElementById('share-dropdown-menu').classList.remove('open'); if (format === 'link') { try { await navigator.clipboard.writeText(window.location.href); alert('✅ Live Link Copied!'); } catch (e) { prompt('Copy this link (Ctrl+C):', window.location.href); } return; } const loadEl = document.createElement('div'); loadEl.id = 'export-loading'; loadEl.innerHTML = '<div class="load-title">⏳ Preparing Download...</div><div class="load-sub">Please wait a few seconds</div>'; document.body.appendChild(loadEl); await new Promise(r => setTimeout(r, 250)); try { const panel = document.getElementById('production-dashboard-panel'); const canvas = await html2canvas(panel, { scale: 2, useCORS: true, allowTaint: true, backgroundColor: '#f3f4f6', scrollX: 0, scrollY: 0, width: panel.scrollWidth, height: panel.scrollHeight, windowWidth: panel.scrollWidth, windowHeight: panel.scrollHeight, logging: false, imageTimeout: 0 }); if (format === 'png') { triggerDownload(canvas.toDataURL('image/png'), `DPQSL_Cutting_${pickerElement.value}.png`); } else if (format === 'jpg') { triggerDownload(canvas.toDataURL('image/jpeg', 0.93), `DPQSL_Cutting_${pickerElement.value}.jpg`); } else if (format === 'pdf') { const { jsPDF } = window.jspdf; const imgData = canvas.toDataURL('image/jpeg', 0.95); const mmW = (canvas.width / 2) * 0.2645; const mmH = (canvas.height / 2) * 0.2645; const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [mmW, mmH] }); pdf.addImage(imgData, 'JPEG', 0, 0, mmW, mmH); pdf.save(`DPQSL_Cutting_${pickerElement.value}.pdf`); } } catch (err) { console.error('Export error:', err); alert('❌ Download failed!\n\nError: ' + err.message); } finally { const l = document.getElementById('export-loading'); if (l) l.remove(); } } function triggerDownload(dataUrl, filename) { const a = document.createElement('a'); a.href = dataUrl; a.download = filename; document.body.appendChild(a); a.click(); setTimeout(() => document.body.removeChild(a), 300); }
+    /* ===== DATA LOAD ===== */    async function loadProductionSpreadsheet() {
+            const dateStr = pickerElement.value;
+            document.getElementById('production-table-body').innerHTML = `<tr><td colspan="18" style="padding:20px;text-align:center;color:#6b7280;font-weight:700;">            <i class="fa-solid fa-spinner fa-spin" style="margin-right:8px"></i>Loading...</td></tr>`; clearKPIs();
+            const url = `https://docs.google.com/spreadsheets/d/${SHEET_GLOBAL_ID}/gviz/tq?tqx=out:json&sheet=${dateStr}&t=${Date.now()}`; try {
+                const res = await fetch(url); if (!res.ok) throw new Error('Network error'); const raw = await res.text();
+                const jsonStr = raw.replace(/^[^(]+\(/, '').replace(/\);?\s*$/, ''); const json = JSON.parse(jsonStr);
+                if (json.status === 'error') { renderNoData(); return; }
+                const table = json.table; if (!table || !table.rows || table.rows.length === 0) { renderNoData(); return; }
+                const cols = table.cols.length; const header = table.cols.map(c => c.label || ''); const dataRows = table.rows.map(r => Array.from({ length: cols }, (_, i) => { const cell = r.c && r.c[i]; return (cell && cell.v !== null && cell.v !== undefined) ? String(cell.v) : ''; }));
+                const allRows = [header, ...dataRows]; renderTable(allRows);
+            } catch (e) { console.error(e); renderNoData(); }
+        }
+    /* ===== CSV PARSER ===== */    function parseCSV(text) { let r = [], row = [''], q = false; for (let i = 0; i < text.length; i++) { const c = text[i]; if (c === '"') { q = !q; } else if (c === ',' && !q) { row.push(''); } else if ((c === '\r' || c === '\n') && !q) { if (c === '\r' && text[i + 1] === '\n') i++; r.push(row); row = ['']; } else { row[row.length - 1] += c; } } if (row.length > 1 || row[0] !== '') r.push(row); return r; }
+        function renderNoData() { document.getElementById('production-table-body').innerHTML = `<tr class="no-data-row"><td colspan="18"><i class="fa-solid fa-triangle-exclamation" style="margin-right:8px"></i>Not Found Any Update For Selected Date (${pickerElement.value})</td></tr>`; clearKPIs(); }
+        function clearKPIs() { ['kpi-total-lines', 'kpi-total-target', 'kpi-total-output', 'kpi-overall-ach'].forEach(id => document.getElementById(id).innerText = '0');['kpi-achieved', 'kpi-warning', 'kpi-critical'].forEach(id => document.getElementById(id).innerHTML = '0 <span style="font-size:11px;color:#9ca3af">0%</span>'); document.getElementById('top-lines').innerHTML = ''; document.getElementById('low-lines').innerHTML = ''; document.getElementById('hourly-bar-chart').innerHTML = ''; document.getElementById('btn-expand-top').style.display = 'none'; document.getElementById('btn-expand-low').style.display = 'none'; }
+    /* ===== RENDER TABLE ===== */    function renderTable(csvRows) {
+            const tbody = document.getElementById('production-table-body'); tbody.innerHTML = '';
+            const rows = csvRows.filter(row => { if (!row || !row.length) return false; const v = String(row[0]).trim().toLowerCase(); return v && v !== 'line' && v !== 'undefined'; });
+            if (!rows.length) { renderNoData(); return; }
+            let successLines = 0, warnLines = 0, critLines = 0; let totalTarget = 0, totalOutput = 0; let hourly = Array(10).fill(0); let effArr = [];
+            rows.forEach(row => {
+                const lineStr = row[0] || ''; const buyerStr = row[1] || ''; const styleStr = row[2] || ''; const target = parseFloat(row[3]) || 0; const commentStr = row[14] || '';
+                const colIndices = [4, 5, 6, 7, 8, 9, 10, 11, 12, 13]; const rawHrStrings = colIndices.map(i => (row[i] !== undefined ? String(row[i]).trim() : '')); const hrs = rawHrStrings.map(s => s === '' ? null : (parseFloat(s) || 0));
+                const enteredHours = hrs.filter(v => v !== null).length; const lineOut = hrs.reduce((a, v) => a + (v !== null ? v : 0), 0); const lineTgt = target * enteredHours;
+                totalTarget += lineTgt; totalOutput += lineOut;
+                hrs.forEach((v, i) => { if (v !== null) hourly[i] += v; });
+                const pct = lineTgt > 0 ? (lineOut / lineTgt) * 100 : 0; let badgeCls = 'badge-critical', badgeLbl = 'CRITICAL', txtCls = 'txt-red'; if (pct >= 100) { badgeCls = 'badge-achieved'; badgeLbl = 'ACHIEVED'; txtCls = 'txt-green'; successLines++; } else if (pct >= 90) { badgeCls = 'badge-warning'; badgeLbl = 'WARNING'; txtCls = 'txt-yellow'; warnLines++; } else { critLines++; }
+                effArr.push({ line: lineStr, pct });
+                const hrCells = hrs.map(v => `<td>${v === null ? '-' : v}</td>`).join('');
+                const tr = document.createElement('tr'); tr.innerHTML = `                <td class="gray-bg">${lineStr}</td>                <td class="left">${buyerStr}</td>                <td>${styleStr}</td>                <td style="color:#1e40af">${target.toLocaleString()}</td>                ${hrCells}                <td class="blue-bg">${lineOut.toLocaleString()}</td>                <td class="blue-bg ${txtCls}">${pct.toFixed(2)}%</td>                <td><span class="badge ${badgeCls}">${badgeLbl}</span></td>                <td class="left" style="font-size:10px;color:navy;font-weight:700;min-width:140px;white-space:normal;word-break:break-word;line-height:1.4">${commentStr}</td>`; tbody.appendChild(tr);
+            });
+            const n = rows.length; document.getElementById('kpi-total-lines').innerText = n; document.getElementById('kpi-achieved').innerHTML = `${successLines} <span style="font-size:11px;color:#9ca3af">${((successLines / n) * 100).toFixed(1)}%</span>`; document.getElementById('kpi-warning').innerHTML = `${warnLines}   <span style="font-size:11px;color:#9ca3af">${((warnLines / n) * 100).toFixed(1)}%</span>`; document.getElementById('kpi-critical').innerHTML = `${critLines}   <span style="font-size:11px;color:#9ca3af">${((critLines / n) * 100).toFixed(1)}%</span>`; document.getElementById('kpi-total-target').innerText = totalTarget.toLocaleString(); document.getElementById('kpi-total-output').innerText = totalOutput.toLocaleString(); const sysPct = totalTarget > 0 ? (totalOutput / totalTarget) * 100 : 0; document.getElementById('kpi-overall-ach').innerText = sysPct.toFixed(2) + '%';
+            globalTopLines = effArr.filter(x => x.pct >= 100).sort((a, b) => b.pct - a.pct); globalLowLines = effArr.filter(x => x.pct < 90).sort((a, b) => a.pct - b.pct); isTopExpanded = false; isLowExpanded = false; renderTopLines(); renderLowLines();
+            const peak = Math.max(...hourly, 1); const chart = document.getElementById('hourly-bar-chart'); chart.innerHTML = ''; const labels = ['8-9', '9-10', '10-11', '11-12', '12-1', '2-3', '3-4', '4-5', '5-6', '6-7']; hourly.forEach((v, i) => { const h = (v / peak) * 85; chart.innerHTML += `<div class="bar-col">                <span class="bar-val">${v > 0 ? v.toLocaleString() : ''}</span>                <div class="bar-rect" style="height:${h}%"></div>                <span class="bar-label">${labels[i]}</span>            </div>`; });
+            document.getElementById('last-updated').innerText = new Date().toLocaleTimeString('en-US', { hour12: true });
+        }
+    /* ===== TOP / LOW PANELS ===== */    function renderTopLines() { const ul = document.getElementById('top-lines'); ul.innerHTML = ''; const items = isTopExpanded ? globalTopLines : globalTopLines.slice(0, 3); if (!items.length) { ul.innerHTML = '<li style="justify-content:center;color:#9ca3af;font-size:11px;padding:8px 0;">No Achieved Line Yet</li>'; } else { items.forEach((x, i) => { ul.innerHTML += `<li class="green"><span>${i + 1}. Line ${x.line}</span><span>${x.pct.toFixed(1)}%</span></li>`; }); } const btn = document.getElementById('btn-expand-top'); if (globalTopLines.length > 3) { btn.style.display = 'inline-block'; btn.innerText = isTopExpanded ? 'See Less' : 'See More'; } else btn.style.display = 'none'; }
+        function renderLowLines() { const ul = document.getElementById('low-lines'); ul.innerHTML = ''; const items = isLowExpanded ? globalLowLines : globalLowLines.slice(0, 3); if (!items.length) { ul.innerHTML = `<li style="justify-content:center;flex-direction:column;gap:4px;padding:12px 0;text-align:center;">                <span style="font-size:20px;">🎉</span>                <span style="color:#16a34a;font-size:12px;font-weight:900;">All Lines Doing Good Performance!</span>            </li>`; } else { items.forEach((x, i) => { ul.innerHTML += `<li class="red"><span>${i + 1}. Line ${x.line}</span><span>${x.pct.toFixed(1)}%</span></li>`; }); } const btn = document.getElementById('btn-expand-low'); if (globalLowLines.length > 3) { btn.style.display = 'inline-block'; btn.innerText = isLowExpanded ? 'See Less' : 'See More'; } else btn.style.display = 'none'; }
+        function toggleTopLines() { isTopExpanded = !isTopExpanded; renderTopLines(); } function toggleLowLines() { isLowExpanded = !isLowExpanded; renderLowLines(); }
+    /* ===== AUTO REFRESH ===== */    setInterval(() => { schedulerCountdown--; document.getElementById('countdown').innerText = schedulerCountdown; if (schedulerCountdown <= 0) { loadProductionSpreadsheet(); schedulerCountdown = 120; } }, 1000);
+        window.onload = () => loadProductionSpreadsheet();</script>
+</body>
+
+</html>
