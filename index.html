@@ -2,6 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" href="logo-1.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Live Cutting Input Board</title>
     <!-- PWA Meta Tags -->
@@ -31,7 +32,7 @@
       body {
         background: #f3f4f6;
         font-family: sans-serif;
-        font-size: 12px;
+        font-size: 15px;
         padding: 8px;
         user-select: none;
       }
@@ -45,7 +46,7 @@
       /* HEADER */
       .header-card {
         background: #fff;
-        padding: 12px;
+        padding: 8px 12px;
         border-radius: 8px;
         box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
         margin-bottom: 12px;
@@ -58,24 +59,24 @@
       .header-left {
         display: flex;
         align-items: center;
-        gap: 12px;
+        gap: 10px;
       }
 
       .header-logo {
-        width: 70px;
-        height: 70px;
+        width: 52px;
+        height: 52px;
         object-fit: contain;
       }
 
       .header-title h1 {
-        font-size: 18px;
+        font-size: 21px;
         font-weight: 900;
         color: #1e3a8a;
         letter-spacing: 0.03em;
       }
 
       .header-title p {
-        font-size: 12px;
+        font-size: 14px;
         font-weight: 700;
         color: #6b7280;
         text-transform: uppercase;
@@ -95,7 +96,7 @@
         align-items: center;
         gap: 8px;
         background: #eff6ff;
-        padding: 6px 12px;
+        padding: 5px 12px;
         border-radius: 8px;
         border: 1px solid #bfdbfe;
       }
@@ -103,12 +104,12 @@
       .date-box label {
         color: #1e3a8a;
         font-weight: 900;
-        font-size: 11px;
+        font-size: 14px;
         text-transform: uppercase;
       }
 
       .time-box {
-        font-size: 16px;
+        font-size: 20px;
         font-weight: 900;
         color: #1f2937;
       }
@@ -122,7 +123,7 @@
         padding: 4px 12px;
         border-radius: 9999px;
         border: 1px solid #86efac;
-        font-size: 11px;
+        font-size: 14px;
         font-weight: 900;
         text-transform: uppercase;
       }
@@ -261,7 +262,7 @@
       }
 
       .kpi-label {
-        font-size: 9px;
+        font-size: 12px;
         font-weight: 700;
         color: #6b7280;
         text-transform: uppercase;
@@ -270,14 +271,14 @@
       }
 
       .kpi-val {
-        font-size: 20px;
+        font-size: 26px;
         font-weight: 900;
         color: #1e3a8a;
         line-height: 1.1;
       }
 
       .kpi-val.sm {
-        font-size: 18px;
+        font-size: 24px;
       }
 
       /* TABLE */
@@ -299,7 +300,7 @@
       thead tr {
         background: #004085;
         color: #fff;
-        font-size: 10px;
+        font-size: 14px;
         font-weight: 700;
         text-transform: uppercase;
         letter-spacing: 0.05em;
@@ -319,7 +320,7 @@
       tbody tr {
         background: #fff;
         border-bottom: 1px solid #f3f4f6;
-        font-size: 11px;
+        font-size: 15px;
         font-weight: 700;
         color: #374151;
       }
@@ -349,11 +350,11 @@
       }
 
       .badge {
-        padding: 2px 8px;
+        padding: 3px 8px;
         border-radius: 4px;
-        font-size: 10px;
+        font-size: 13px;
         display: inline-block;
-        width: 80px;
+        width: 96px;
         text-align: center;
         font-weight: 700;
       }
@@ -402,7 +403,7 @@
       }
 
       .panel-title {
-        font-size: 11px;
+        font-size: 14px;
         font-weight: 900;
         text-transform: uppercase;
         margin-bottom: 8px;
@@ -431,9 +432,9 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 3px 0;
+        padding: 4px 0;
         border-bottom: 1px solid #f3f4f6;
-        font-size: 12px;
+        font-size: 15px;
         font-weight: 700;
       }
 
@@ -489,7 +490,7 @@
       }
 
       .bar-val {
-        font-size: 9px;
+        font-size: 12px;
         font-weight: 900;
         color: #1e3a8a;
         margin-bottom: 2px;
@@ -506,7 +507,7 @@
       }
 
       .bar-label {
-        font-size: 9px;
+        font-size: 12px;
         color: #6b7280;
         font-weight: 700;
         margin-top: 3px;
@@ -518,7 +519,7 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
-        font-size: 10px;
+        font-size: 13px;
         color: #6b7280;
         font-weight: 700;
       }
@@ -637,7 +638,7 @@
             <span
               id="date-display"
               style="
-                font-size: 12px;
+                font-size: 15px;
                 font-weight: 700;
                 color: #1f2937;
                 padding: 2px 4px;
@@ -1039,7 +1040,7 @@
         ["kpi-achieved", "kpi-warning", "kpi-critical"].forEach(
           (id) =>
             (document.getElementById(id).innerHTML =
-              '0 <span style="font-size:11px;color:#9ca3af">0%</span>'),
+              '0 <span style="font-size:13px;color:#9ca3af">0%</span>'),
         );
         document.getElementById("top-lines").innerHTML = "";
         document.getElementById("low-lines").innerHTML = "";
@@ -1084,7 +1085,7 @@
             const lineOut = hrs.reduce((a, v) => a + (v !== null ? v : 0), 0);
             const lineTgt = target * enteredHours; // এটি টেবিলের ও লাইনের স্ট্যাটাসের জন্য আগের মতোই থাকবে
 
-            // শুধুমাত্র KPI Box এর টোটালে প্রতি লাইনের টার্গেট ১০ দিয়ে গুণ হয়ে যোগ হবে
+            // শুধুমাত্র KPI Box এর টোটালে প্রতি লাইনের টার্গেট ১০ দিয়ে গুণ হয়ে যোগ হবে
             totalTarget += (target * 10);
           totalOutput += lineOut;
           hrs.forEach((v, i) => {
@@ -1112,17 +1113,17 @@
             .map((v) => `<td>${v === null ? "-" : v}</td>`)
             .join("");
           const tr = document.createElement("tr");
-          tr.innerHTML = `                <td class="gray-bg">${lineStr}</td>                <td class="left">${buyerStr}</td>                <td>${styleStr}</td>                <td style="color:#1e40af">${target.toLocaleString()}</td>                ${hrCells}                <td class="blue-bg">${lineOut.toLocaleString()}</td>                <td class="blue-bg ${txtCls}">${pct.toFixed(2)}%</td>                <td><span class="badge ${badgeCls}">${badgeLbl}</span></td>                <td class="left" style="font-size:10px;color:navy;font-weight:700;min-width:140px;white-space:normal;word-break:break-word;line-height:1.4">${commentStr}</td>`;
+          tr.innerHTML = `                <td class="gray-bg">${lineStr}</td>                <td class="left">${buyerStr}</td>                <td>${styleStr}</td>                <td style="color:#1e40af">${target.toLocaleString()}</td>                ${hrCells}                <td class="blue-bg">${lineOut.toLocaleString()}</td>                <td class="blue-bg ${txtCls}">${pct.toFixed(2)}%</td>                <td><span class="badge ${badgeCls}">${badgeLbl}</span></td>                <td class="left" style="font-size:13px;color:navy;font-weight:700;min-width:140px;white-space:normal;word-break:break-word;line-height:1.4">${commentStr}</td>`;
           tbody.appendChild(tr);
         });
         const n = rows.length;
         document.getElementById("kpi-total-lines").innerText = n;
         document.getElementById("kpi-achieved").innerHTML =
-          `${successLines} <span style="font-size:11px;color:#9ca3af">${((successLines / n) * 100).toFixed(1)}%</span>`;
+          `${successLines} <span style="font-size:13px;color:#9ca3af">${((successLines / n) * 100).toFixed(1)}%</span>`;
         document.getElementById("kpi-warning").innerHTML =
-          `${warnLines}   <span style="font-size:11px;color:#9ca3af">${((warnLines / n) * 100).toFixed(1)}%</span>`;
+          `${warnLines}   <span style="font-size:13px;color:#9ca3af">${((warnLines / n) * 100).toFixed(1)}%</span>`;
         document.getElementById("kpi-critical").innerHTML =
-          `${critLines}   <span style="font-size:11px;color:#9ca3af">${((critLines / n) * 100).toFixed(1)}%</span>`;
+          `${critLines}   <span style="font-size:13px;color:#9ca3af">${((critLines / n) * 100).toFixed(1)}%</span>`;
         document.getElementById("kpi-total-target").innerText =
           totalTarget.toLocaleString();
         document.getElementById("kpi-total-output").innerText =
@@ -1170,7 +1171,7 @@
           : globalTopLines.slice(0, 3);
         if (!items.length) {
           ul.innerHTML =
-            '<li style="justify-content:center;color:#9ca3af;font-size:11px;padding:8px 0;">No Achieved Line Yet</li>';
+            '<li style="justify-content:center;color:#9ca3af;font-size:13px;padding:8px 0;">No Achieved Line Yet</li>';
         } else {
           items.forEach((x, i) => {
             ul.innerHTML += `<li class="green"><span>${i + 1}. Line ${x.line}</span><span>${x.pct.toFixed(1)}%</span></li>`;
