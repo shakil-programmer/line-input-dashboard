@@ -69,7 +69,7 @@
       }
 
       .header-title h1 {
-        font-size: 19px;
+        font-size: 21px;
         font-weight: 900;
         color: #1e3a8a;
         letter-spacing: 0.03em;
@@ -787,7 +787,7 @@
       <div class="table-wrap">
         <table>
           <colgroup>
-            <col style="width: 50px" />   <!-- Line -->
+            <col style="width: 75px" />   <!-- Line (Width increased slightly for 'Line-X' text) -->
             <col style="width: 90px" />   <!-- Buyer -->
             <col style="width: 160px" />  <!-- Style -->
             <col style="width: 65px" />   <!-- Target -->
@@ -894,7 +894,7 @@
         globalLowLines = [];
       let isTopExpanded = false,
         isLowExpanded = false;
-      /* ===== PWA SERVICE WORKER (banner ছাড়া) ===== */ if (
+      /* ===== PWA SERVICE WORKER ===== */ if (
         "serviceWorker" in navigator
       ) {
         window.addEventListener("load", () => {
@@ -1103,7 +1103,11 @@
         let hourly = Array(10).fill(0);
         let effArr = [];
         rows.forEach((row) => {
-          const lineStr = row[0] || "";
+          const rawLineStr = row[0] || "";
+          
+          // চেক করা হচ্ছে যেন অলরেডি "Line-" লেখা না থাকে, যদি না থাকে তবে "Line-" যোগ করবে
+          const lineStr = rawLineStr.toLowerCase().startsWith("line") ? rawLineStr : "Line-" + rawLineStr;
+          
           const buyerStr = row[1] || "";
           const styleStr = row[2] || "";
           const target = parseFloat(row[3]) || 0;
@@ -1115,13 +1119,12 @@
           const hrs = rawHrStrings.map((s) =>
             s === "" ? null : parseFloat(s) || 0,
           );
-          // নতুন/সংশোধিত কোড:
-            const enteredHours = hrs.filter((v) => v !== null).length;
-            const lineOut = hrs.reduce((a, v) => a + (v !== null ? v : 0), 0);
-            const lineTgt = target * enteredHours; // এটি টেবিলের ও লাইনের স্ট্যাটাসের জন্য আগের মতোই থাকবে
+          
+          const enteredHours = hrs.filter((v) => v !== null).length;
+          const lineOut = hrs.reduce((a, v) => a + (v !== null ? v : 0), 0);
+          const lineTgt = target * enteredHours; 
 
-            // শুধুমাত্র KPI Box এর টোটালে প্রতি লাইনের টার্গেট ১০ দিয়ে গুণ হয়ে যোগ হবে
-            totalTarget += (target * 10);
+          totalTarget += (target * 10);
           totalOutput += lineOut;
           hrs.forEach((v, i) => {
             if (v !== null) hourly[i] += v;
@@ -1209,7 +1212,8 @@
             '<li style="justify-content:center;color:#9ca3af;font-size:13px;padding:8px 0;">No Achieved Line Yet</li>';
         } else {
           items.forEach((x, i) => {
-            ul.innerHTML += `<li class="green"><span>${i + 1}. Line ${x.line}</span><span>${x.pct.toFixed(1)}%</span></li>`;
+            // এখানে x.line অলরেডি "Line-X" ফরম্যাটে আছে
+            ul.innerHTML += `<li class="green"><span>${i + 1}. ${x.line}</span><span>${x.pct.toFixed(1)}%</span></li>`;
           });
         }
         const btn = document.getElementById("btn-expand-top");
@@ -1228,7 +1232,8 @@
           ul.innerHTML = `<li style="justify-content:center;flex-direction:column;gap:4px;padding:12px 0;text-align:center;">                <span style="font-size:20px;">🎉</span>                <span style="color:#16a34a;font-size:12px;font-weight:900;">All Lines Doing Good Performance!</span>            </li>`;
         } else {
           items.forEach((x, i) => {
-            ul.innerHTML += `<li class="red"><span>${i + 1}. Line ${x.line}</span><span>${x.pct.toFixed(1)}%</span></li>`;
+            // এখানে x.line অলরেডি "Line-X" ফরম্যাটে আছে
+            ul.innerHTML += `<li class="red"><span>${i + 1}. ${x.line}</span><span>${x.pct.toFixed(1)}%</span></li>`;
           });
         }
         const btn = document.getElementById("btn-expand-low");
