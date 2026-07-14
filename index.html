@@ -81,6 +81,21 @@
         color: #6b7280;
         text-transform: uppercase;
       }
+      .floor-tag {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #1e40af;
+  color: #fff;
+  padding: 6px 16px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(30, 64, 175, 0.35);
+}
 
       .header-right {
         display: flex;
@@ -637,17 +652,9 @@
             <p>Line Wise Hourly Cutting Input Status</p>
           </div>
         </div>
-        <div style="
-            padding: 5px;
-            border: 2px solid #ccc;
-            border-radius: 6px; 
-            font-weight: 700; 
-            font-size: 30px;
-            color: #fff;
-            background:rgb(0, 137, 179);
-            ">
-          Cutting Dashboard
-          </div>
+        <div class="floor-tag">
+  <i class="fa-solid fa-scissors"></i> Cutting Floor
+</div>
         <div class="header-right">
           <div
             class="date-box"
